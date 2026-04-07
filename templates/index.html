@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NutriLens — AI-powered meal analysis using Gemini and Claude. Get instant nutrition breakdowns and personalized health coaching.">
+  <title>NutriLens — AI Meal Analyzer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <!-- Ambient gradient blobs -->
+  <div class="ambient" aria-hidden="true"></div>
+
+  <!-- Particle background -->
+  <div class="particle-bg" id="particleBg" aria-hidden="true"></div>
+
+  <div class="page-wrapper">
+
+    <!-- Flickering Brand Title -->
+    <h1 class="brand-title" aria-label="NutriLens">🔬 NutriLens</h1>
+    <p class="brand-subtitle">AI-powered meal analysis &amp; health coaching</p>
+
+    <!-- Glassmorphism Form Card -->
+    <form
+      class="glass-card animate-up"
+      action="{{ url_for('analyze') }}"
+      method="POST"
+      aria-label="Meal analysis form"
+    >
+      <div class="form-group">
+        <label for="meal_description">🍽️ Describe Your Meal</label>
+        <textarea
+          id="meal_description"
+          name="meal_description"
+          class="neon-input"
+          rows="4"
+          required
+          placeholder="e.g., Grilled chicken breast with quinoa, roasted broccoli, and a side of mixed berries"
+          aria-required="true"
+        ></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="calorie_goal">🔥 Daily Calorie Goal</label>
+        <input
+          type="number"
+          id="calorie_goal"
+          name="calorie_goal"
+          class="neon-input"
+          required
+          placeholder="e.g., 2000"
+          aria-required="true"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="protein_goal">💪 Daily Protein Goal (g)</label>
+        <input
+          type="number"
+          id="protein_goal"
+          name="protein_goal"
+          class="neon-input"
+          required
+          placeholder="e.g., 150"
+          aria-required="true"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="water_goal">💧 Daily Water Goal (L)</label>
+        <input
+          type="number"
+          id="water_goal"
+          name="water_goal"
+          class="neon-input"
+          step="0.1"
+          required
+          placeholder="e.g., 2.5"
+          aria-required="true"
+        >
+      </div>
+
+      <button type="submit" class="btn-shimmer" id="analyzeBtn" aria-label="Analyze meal with AI">
+        ⚡ Analyze My Meal
+      </button>
+    </form>
+
+    <!-- Navigation -->
+    <nav class="nav-row" aria-label="Page navigation">
+      <a href="{{ url_for('history') }}" class="btn-glow purple" aria-label="View meal history">
+        📊 View History
+      </a>
+    </nav>
+  </div>
+
+  <!-- Particle JS -->
+  <script>
+    (function () {
+      const container = document.getElementById('particleBg');
+      const PARTICLE_COUNT = 45;
+      const colors = ['#39ff14', '#8b5cf6', '#22d3ee', '#f472b6'];
+
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        const p = document.createElement('div');
+        p.classList.add('particle');
+        const size = Math.random() * 4 + 2;
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        p.style.cssText = `
+          width: ${size}px;
+          height: ${size}px;
+          left: ${Math.random() * 100}%;
+          background: ${color};
+          box-shadow: 0 0 ${size * 3}px ${color};
+          animation-duration: ${Math.random() * 12 + 8}s;
+          animation-delay: ${Math.random() * 10}s;
+        `;
+        container.appendChild(p);
+      }
+    })();
+  </script>
+
+</body>
+</html>

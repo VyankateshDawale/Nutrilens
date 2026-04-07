@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NutriLens meal analysis results — view your nutrition breakdown and personalized AI health coaching advice.">
+  <title>NutriLens — Analysis Result</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <!-- Ambient gradient blobs -->
+  <div class="ambient" aria-hidden="true"></div>
+
+  <div class="page-wrapper">
+
+    <h1 class="brand-title" aria-label="NutriLens Results">🔬 NutriLens</h1>
+    <p class="brand-subtitle">Your meal analysis is ready</p>
+
+    {% if data %}
+
+    <div class="result-grid">
+
+      <!-- ═══ LEFT: Gemini Nutrition Data ═══ -->
+      <div class="glass-card animate-right" aria-label="Nutrition breakdown from Gemini AI">
+        <div class="section-label label-neon">
+          <span class="emoji" aria-hidden="true">🧬</span> Gemini Nutrition Data
+        </div>
+
+        {% if data.nutrition_data and not data.nutrition_data.get('error') %}
+
+        <!-- Meal Summary -->
+        <p style="color: var(--text-muted); margin-bottom: 20px; font-style: italic;">
+          {{ data.nutrition_data.meal_summary }}
+        </p>
+
+        <!-- SVG Progress Rings -->
+        <div class="ring-grid" aria-label="Nutrition metrics">
+
+          <!-- Calories -->
+          <div class="ring-item ring-neon" aria-label="Calories: {{ data.nutrition_data.calories }} kcal">
+            <svg class="progress-ring" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="progress-ring__bg" cx="60" cy="60" r="52" />
+              <circle class="progress-ring__fill" cx="60" cy="60" r="52"
+                stroke-dasharray="326.73"
+                stroke-dashoffset="326.73"
+                data-percent="{{ [(data.nutrition_data.calories / (data.calorie_goal|default(2000, true)|int or 2000)) * 100, 100] | min }}"
+              />
+            </svg>
+            <span class="ring-value">{{ data.nutrition_data.calories }}</span>
+            <span class="ring-label">Calories</span>
+          </div>
+
+          <!-- Protein -->
+          <div class="ring-item ring-purple" aria-label="Protein: {{ data.nutrition_data.protein_g }} grams">
+            <svg class="progress-ring" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="progress-ring__bg" cx="60" cy="60" r="52" />
+              <circle class="progress-ring__fill" cx="60" cy="60" r="52"
+                stroke-dasharray="326.73"
+                stroke-dashoffset="326.73"
+                data-percent="{{ [(data.nutrition_data.protein_g / 50) * 100, 100] | min }}"
+              />
+            </svg>
+            <span class="ring-value">{{ data.nutrition_data.protein_g }}g</span>
+            <span class="ring-label">Protein</span>
+          </div>
+
+          <!-- Carbs -->
+          <div class="ring-item ring-cyan" aria-label="Carbs: {{ data.nutrition_data.carbs_g }} grams">
+            <svg class="progress-ring" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="progress-ring__bg" cx="60" cy="60" r="52" />
+              <circle class="progress-ring__fill" cx="60" cy="60" r="52"
+                stroke-dasharray="326.73"
+                stroke-dashoffset="326.73"
+                data-percent="{{ [(data.nutrition_data.carbs_g / 300) * 100, 100] | min }}"
+              />
+            </svg>
+            <span class="ring-value">{{ data.nutrition_data.carbs_g }}g</span>
+            <span class="ring-label">Carbs</span>
+          </div>
+
+          <!-- Fat -->
+          <div class="ring-item ring-pink" aria-label="Fat: {{ data.nutrition_data.fat_g }} grams">
+            <svg class="progress-ring" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="progress-ring__bg" cx="60" cy="60" r="52" />
+              <circle class="progress-ring__fill" cx="60" cy="60" r="52"
+                stroke-dasharray="326.73"
+                stroke-dashoffset="326.73"
+                data-percent="{{ [(data.nutrition_data.fat_g / 65) * 100, 100] | min }}"
+              />
+            </svg>
+            <span class="ring-value">{{ data.nutrition_data.fat_g }}g</span>
+            <span class="ring-label">Fat</span>
+          </div>
+
+        </div>
+
+        <!-- Extra stats row -->
+        <ul class="nutrition-list" style="margin-top: 24px;" aria-label="Additional nutrition details">
+          <li>
+            <span>🌾 Fiber</span>
+            <span class="value" style="color:var(--orange)">{{ data.nutrition_data.fiber_g }}g</span>
+          </li>
+          <li>
+            <span>🍬 Sugar</span>
+            <span class="value" style="color:var(--pink)">{{ data.nutrition_data.sugar_g }}g</span>
+          </li>
+        </ul>
+
+        <!-- Goals Recap -->
+        <div class="goals-section" aria-label="Your daily goals">
+          <p class="goals-text">🎯 <strong>Your Goals:</strong> {{ data.user_goals }}</p>
+        </div>
+
+        {% else %}
+        <p class="error-text" role="alert">⚠️ Could not retrieve nutrition data. Please try again.</p>
+        {% endif %}
+      </div>
+
+      <!-- ═══ RIGHT: Claude Advice ═══ -->
+      <div class="advice-card animate-left delay-3" aria-label="Health advice from Claude AI">
+        <div class="section-label label-purple">
+          <span class="emoji" aria-hidden="true">🤖</span> Your AI Health Coach
+        </div>
+
+        {% if data.advice %}
+        <div class="advice-text" id="adviceText" aria-live="polite"><!-- filled by typewriter --></div>
+        {% else %}
+        <p class="error-text" role="alert">⚠️ Advice could not be generated at this time.</p>
+        {% endif %}
+      </div>
+
+    </div>
+
+    {% else %}
+    <div class="empty-state glass-card">
+      <p>No analysis data found. Please submit a meal first.</p>
+    </div>
+    {% endif %}
+
+    <!-- Navigation -->
+    <nav class="nav-row" aria-label="Page navigation">
+      <a href="{{ url_for('index') }}" class="btn-glow" aria-label="Log another meal">
+        ➕ Log Another Meal
+      </a>
+      <a href="{{ url_for('history') }}" class="btn-glow purple" aria-label="View meal history">
+        📊 View History
+      </a>
+    </nav>
+  </div>
+
+  <script>
+    // ── Animate SVG progress rings ──
+    document.addEventListener('DOMContentLoaded', function () {
+      const CIRCUMFERENCE = 326.73;
+
+      document.querySelectorAll('.progress-ring__fill').forEach(function (circle) {
+        var pct = parseFloat(circle.getAttribute('data-percent')) || 0;
+        if (pct > 100) pct = 100;
+        var offset = CIRCUMFERENCE - (pct / 100) * CIRCUMFERENCE;
+        // start fully hidden, then animate
+        circle.style.strokeDashoffset = CIRCUMFERENCE;
+        requestAnimationFrame(function () {
+          setTimeout(function () {
+            circle.style.strokeDashoffset = offset;
+          }, 300);
+        });
+      });
+
+      // ── Typewriter effect for advice text ──
+      var adviceEl = document.getElementById('adviceText');
+      if (adviceEl) {
+        var fullText = {{ data.advice | default('', true) | tojson }};
+        if (fullText) {
+          var i = 0;
+          adviceEl.classList.add('typewriter-cursor');
+          function typeChar() {
+            if (i < fullText.length) {
+              adviceEl.textContent += fullText.charAt(i);
+              i++;
+              setTimeout(typeChar, 12 + Math.random() * 18);
+            } else {
+              adviceEl.classList.remove('typewriter-cursor');
+            }
+          }
+          setTimeout(typeChar, 800);
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

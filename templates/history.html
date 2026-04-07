@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NutriLens meal history — view your recent meals on a timeline and get a weekly AI nutrition insight.">
+  <title>NutriLens — Meal History</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <!-- Ambient gradient blobs -->
+  <div class="ambient" aria-hidden="true"></div>
+
+  <div class="page-wrapper">
+
+    <h1 class="brand-title" aria-label="NutriLens History">🔬 NutriLens</h1>
+    <p class="brand-subtitle">Your nutrition journey at a glance</p>
+
+    <!-- ═══ Meal Timeline ═══ -->
+    <div class="section-label label-neon" style="max-width:700px;width:100%;margin-top:12px;">
+      <span class="emoji" aria-hidden="true">🕒</span> Recent Meals
+    </div>
+
+    {% if meal_history %}
+    <div class="timeline" aria-label="Meal history timeline">
+
+      {% for meal in meal_history %}
+      <div class="timeline-item" aria-label="Meal entry {{ loop.index }}">
+        <div class="timeline-card">
+          <div class="timeline-date" aria-label="Date">
+            {{ meal.timestamp.strftime('%b %d, %Y — %I:%M %p UTC') if meal.timestamp else 'Unknown date' }}
+          </div>
+          <div class="timeline-meal">{{ meal.meal_description }}</div>
+          {% if meal.nutrition_data and not meal.nutrition_data.get('error') %}
+          <div class="timeline-stats">
+            🔥 {{ meal.nutrition_data.calories }} kcal
+            · 💪 {{ meal.nutrition_data.protein_g }}g protein
+            · 🍞 {{ meal.nutrition_data.carbs_g }}g carbs
+            · 🧈 {{ meal.nutrition_data.fat_g }}g fat
+          </div>
+          {% endif %}
+          <div class="timeline-stats" style="margin-top:6px;">
+            🎯 {{ meal.user_goals }}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+    </div>
+    {% else %}
+    <div class="empty-state glass-card" style="max-width:700px;" aria-label="No history available">
+      <p>🍽️ No meals logged yet. Start by analyzing your first meal!</p>
+    </div>
+    {% endif %}
+
+    <!-- ═══ Weekly Insight Panel ═══ -->
+    <div class="section-label label-purple" style="max-width:700px;width:100%;margin-top:32px;">
+      <span class="emoji" aria-hidden="true">📊</span> Your Weekly Pattern
+    </div>
+
+    <div class="insight-panel animate-up delay-3" aria-label="Weekly nutrition insight from Claude AI">
+      <div class="insight-text" id="insightText"><!-- filled by typewriter --></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav-row" aria-label="Page navigation">
+      <a href="{{ url_for('index') }}" class="btn-glow" aria-label="Log a new meal">
+        ➕ Log a Meal
+      </a>
+    </nav>
+  </div>
+
+  <script>
+    // ── Typewriter for weekly insight ──
+    document.addEventListener('DOMContentLoaded', function () {
+      var el = document.getElementById('insightText');
+      if (el) {
+        var fullText = {{ insight | default('', true) | tojson }};
+        if (fullText) {
+          var i = 0;
+          el.classList.add('typewriter-cursor');
+          function typeChar() {
+            if (i < fullText.length) {
+              el.textContent += fullText.charAt(i);
+              i++;
+              setTimeout(typeChar, 10 + Math.random() * 16);
+            } else {
+              el.classList.remove('typewriter-cursor');
+            }
+          }
+          setTimeout(typeChar, 600);
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>
